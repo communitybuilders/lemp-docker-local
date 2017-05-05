@@ -1,0 +1,43 @@
+version: '2'
+services:
+  mysql:
+    build: ./mysql
+    command: mysqld --sql_mode=""
+    user: mysql
+    ports:
+      - '3307:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root'
+      TZ: Australia/Sydney
+    volumes:
+      - mysql-data:/var/lib/mysql
+  web:
+    image: nginx:latest
+    ports:
+      - '80:80'
+    environment:
+      TZ: Australia/Sydney
+    depends_on:
+      - php
+    volumes:
+    #Link from your file directory to /var/www/html/project name
+      - "[Path to project]:/var/www/html/[project_name]:cached"
+      - ./sites:/etc/nginx/conf.d/
+    networks:
+      default:
+        aliases:
+        #url of site
+          - [site url]
+  php:
+    build: ./php
+    environment:
+      DOCKER_XDEBUG_REMOTE_HOST: "192.168.99.99"
+      APPLICATION_ENV: development
+      TZ: Australia/Sydney
+    volumes:
+    #Link from your file directory to /var/www/html/project name
+      - "[Path to project]:/var/www/html/[project_name]:cached"      
+    depends_on:
+      - mysql
+volumes:
+  mysql-data:
